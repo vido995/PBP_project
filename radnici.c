@@ -19,10 +19,10 @@ void prikazZaRadnike(Sql *sql){
 			prikazZaKonobare(sql);
 		break;
 		case 3:
-			prikazZaSankere(sql);
+			prikazZaSankereIKuvare(sql);
 		break;
 		case 4:
-			prikazZaKuvare(sql);
+			prikazZaSankereIKuvare(sql);
 		break;
 		default:
 			printf("\nNiste izabrali nijednu validnu opciju!\n");
@@ -49,6 +49,8 @@ void prikazZaSefaSale(Sql *sql) {
 		case 3:
 			dodajNoviMeni(sql); // TODO: Triger kad se dodaje novi meni da se poslednjem vreme do postavi na sada. 
 		break;
+
+		// Stolovi se insertuju kroz skripte.
 		default:
 			printf("\nNiste izabrali nijednu validnu opciju!\n");
 	}
@@ -81,7 +83,7 @@ void dodajRadnika(Sql *sql) {
 		"1. Konobar", 
 		"2. Sanker",
 		"3. Kuvar");
-		
+	
 	scanf("%i", &stanje);
 	
 	switch(stanje){
@@ -194,7 +196,7 @@ void dodajPice(Sql *sql, int sifra) {
 	scanf("%lf", &kolicina);
 	
 	strcpy(sql->query,"");
-	sprintf(sql->query, "insert into Pice (idPica, kolicina) values (%i, %i);", sifra, kolicina);
+	sprintf(sql->query, "insert into Pice (idPica, kolicina) values (%i, %lf);", sifra, kolicina);
 	
 	if (mysql_query (sql->connection, sql->query) != 0) {
 		printf ("Neuspesno izvrsavanje upita\n");
@@ -212,7 +214,7 @@ void dodajNoviMeni(Sql *sql) {
 	scanf("%i", &sifra);
 	printf("popust\n");
 	int popust = 0;
-	scanf("%i", &cena);
+	scanf("%i", &popust);
 	
 	strcpy(sql->query,"");
 	sprintf(sql->query, "insert into Meni (idMenija, vaziOd, vaziDo, popust) values (%i, now(), NULL, %i);", sifra, popust);
@@ -315,21 +317,21 @@ void prikazZaKonobare(Sql *sql) {
 	
 	printf("Unesite sifru narudzbine koju zelite da usluzite:\n");
 	
-	int sifra = 0;
-	scanf("%i", &sifra);
+	int sifraNarudzbine = 0;
+	scanf("%i", &sifraNarudzbine);
 	prikaziStavkeIzNarudzbine(sql, sifraNarudzbine);
 	
 }
 
 void prikaziStavkeIzNarudzbine(Sql *sql, int sifraNarudzbine) {
 	strcpy(sql->query, "");
-    sprintf(sql->query, "select ns.spremno as Spremno, s.naziv as Naziv, d.naziv as NazivDodatka, d.kolicina as DodatakKolicina " +
-						"from NarudzbinaStavka ns join MeniStavka ms on ms.idMenija = n.idMenija and ms.idStavke = n.idStavke " +
-						"join Stavka s on s.idStavke = ms.idStavke " + 
-						"join DodatakStavkeIzNarudzbine dsn on dsn.idNarudzbine = n.idNarudzbine and " +
-																"dsn.idMenija = ms.idMenija and ms.idStavke = dsn.idStavke " +
-						"join Dodatak d on d.idDodatka = dsn.idDodatka " +
-						"where ns.idNarudzbine = %i;", sifraNarudzbine);
+    sprintf(sql->query, "select ns.spremno as Spremno, s.naziv as Naziv, d.naziv as NazivDodatka, d.kolicina as DodatakKolicina \
+						from NarudzbinaStavka ns join MeniStavka ms on ms.idMenija = n.idMenija and ms.idStavke = n.idStavke \
+						join Stavka s on s.idStavke = ms.idStavke \
+						join DodatakStavkeIzNarudzbine dsn on dsn.idNarudzbine = n.idNarudzbine and \
+																dsn.idMenija = ms.idMenija and ms.idStavke = dsn.idStavke \
+						join Dodatak d on d.idDodatka = dsn.idDodatka \
+						where ns.idNarudzbine = %i;", sifraNarudzbine);
 
     if(mysql_query(sql->connection, sql->query)){
         printf("%s\n",mysql_error(sql->connection));
@@ -380,15 +382,16 @@ void prikaziStavkeIzNarudzbine(Sql *sql, int sifraNarudzbine) {
 
 void prikazZaSankereIKuvare(Sql *sql) {
 	//Prikazuju se sve stavke iz narudzbine koje nisu spremne
+	// TODO: Razdvojiti za konobare i za kuvare i razmotriti dodatak, ovako ne bi trebalo da bude dobro...
 	strcpy(sql->query, "");
-    sprintf(sql->query, "select s.naziv as Naziv, d.naziv as NazivDodatka, d.kolicina as DodatakKolicina " +
-						"from NarudzbinaStavka ns join MeniStavka ms on ms.idMenija = n.idMenija and ms.idStavke = n.idStavke " +
-						"join Stavka s on s.idStavke = ms.idStavke " + 
-						"join DodatakStavkeIzNarudzbine dsn on dsn.idNarudzbine = n.idNarudzbine and " +
-																"dsn.idMenija = ms.idMenija and ms.idStavke = dsn.idStavke " +
-						"join Dodatak d on d.idDodatka = dsn.idDodatka " +
-						"where ns.spremno = false " + 
-						"order by ns.idNarudzbine", sifraNarudzbine);
+    sprintf(sql->query, "select s.naziv as Naziv, d.naziv as NazivDodatka, d.kolicina as DodatakKolicina \
+						from NarudzbinaStavka ns join MeniStavka ms on ms.idMenija = n.idMenija and ms.idStavke = n.idStavke \
+						join Stavka s on s.idStavke = ms.idStavke \
+						join DodatakStavkeIzNarudzbine dsn on dsn.idNarudzbine = n.idNarudzbine and \
+																dsn.idMenija = ms.idMenija and ms.idStavke = dsn.idStavke \
+						join Dodatak d on d.idDodatka = dsn.idDodatka \
+						where ns.spremno = false \
+						order by ns.idNarudzbine");
 
     if(mysql_query(sql->connection, sql->query)){
         printf("%s\n",mysql_error(sql->connection));

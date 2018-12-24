@@ -163,7 +163,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS Racun ;
 
 CREATE TABLE IF NOT EXISTS Racun (
-  idRacun INT NOT NULL,
+  idRacun INT NOT NULL AUTO_INCREMENT,
   iznos DOUBLE NOT NULL,
   PRIMARY KEY (idRacun))
 ENGINE = InnoDB;
@@ -221,9 +221,9 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS Narudzbina ;
 
 CREATE TABLE IF NOT EXISTS Narudzbina (
-  idNarudzbine INT NOT NULL,
+  idNarudzbine INT NOT NULL AUTO_INCREMENT,
   idStola INT NOT NULL,
-  idRacuna INT NOT NULL,
+  idRacuna INT,
   idKonobara INT NULL,
   usluzeno TINYINT(1) NULL,
   PRIMARY KEY (idNarudzbine),
