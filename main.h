@@ -1,6 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define _POSIX_C_SOURCE 200810L
 #define _TIMESPEC_DEFINED
 #include<stdio.h>
 #include<stdlib.h>

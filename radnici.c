@@ -32,11 +32,12 @@ void prikazZaRadnike(Sql *sql){
 void prikazZaSefaSale(Sql *sql) {
 	int stanje = 0;
 	
-	printf("%s:\n%s\n%s\n%s\n\n",
+	printf("%s:\n%s\n%s\n%s\n%s\n\n",
 		"Izaberite opciju",
 		"1. Dodaj radnika", 
 		"2. Dodaj stavku",
-		"3. Napravi novi meni");
+		"3. Napravi novi meni",
+		"4. Nazad");
 	scanf("%i", &stanje);
 
 	switch(stanje){
@@ -49,7 +50,8 @@ void prikazZaSefaSale(Sql *sql) {
 		case 3:
 			dodajNoviMeni(sql); // TODO: Triger kad se dodaje novi meni da se poslednjem vreme do postavi na sada. 
 		break;
-
+		case 4:
+			prikazZaRadnike(sql);
 		// Stolovi se insertuju kroz skripte.
 		default:
 			printf("\nNiste izabrali nijednu validnu opciju!\n");
@@ -58,18 +60,17 @@ void prikazZaSefaSale(Sql *sql) {
 
 void dodajRadnika(Sql *sql) {
 	printf ("Unesite:\n");
-	printf("sifru radnika\n");
+	printf("Sifru radnika:\n");
 	int sifra = 0;
 	scanf("%i", &sifra);
-	printf("ime\n");
-	char ime[45];
+	char ime[45], prezime[45];
+	printf("Ime:\n");
 	scanf("%s", ime);
-	printf("prezime\n");
-	char prezime[45];
+	printf("Prezime:\n");
 	scanf("%s", prezime);
 
 	strcpy(sql->query,"");
-	sprintf(sql->query, "insert into Radnik (idRadnika, ime, prezime) values (%i, %s, %s);", sifra, ime, prezime);
+	sprintf(sql->query, "insert into Radnik (idRadnika, ime, prezime) values ('%d', '%s', '%s');", sifra, ime, prezime);
 	
 	if (mysql_query (sql->connection, sql->query) != 0) {
 		printf ("Neuspesno izvrsavanje upita\n");
@@ -99,20 +100,19 @@ void dodajRadnika(Sql *sql) {
 		default:
 			printf("\nNiste izabrali nijednu validnu opciju!\n");
 	}
+
+	prikazZaSefaSale(sql);
 }
 
 void dodajKonobara(Sql *sql, int sifra) {
 	printf ("Za konobara unesite:\n");
-	printf("depozit\n");
+	printf("Depozit:\n");
 	double depozit = 0;
 	scanf("%lf", &depozit);
-	printf("dnevni pazar\n");
-	double dnevniPazar = 0;
-	scanf("%lf", &dnevniPazar);
 	
 	strcpy(sql->query,"");
 	
-	sprintf(sql->query, "insert into Konobar (idKonobara, depozit, dnevniPazar) values (%i, %lf, %lf);", sifra, depozit, dnevniPazar);
+	sprintf(sql->query, "insert into Konobar (idKonobara, depozit) values ('%i', '%lf');", sifra, depozit);
 	
 	if (mysql_query (sql->connection, sql->query) != 0) {
 		printf ("Neuspesno izvrsavanje upita\n");
@@ -123,7 +123,7 @@ void dodajKonobara(Sql *sql, int sifra) {
 void dodajSankeraKuvara(Sql *sql, int sifra, char* tipStavke) {
 	strcpy(sql->query,"");
 	
-	sprintf(sql->query, "insert into RadnikKojiPriprema (idRadnikaKojiPriprema, tipStavke) values (%i, %s);", sifra, tipStavke);
+	sprintf(sql->query, "insert into RadnikKojiPriprema (idRadnikaKojiPriprema, tipStavke) values ('%i', '%s');", sifra, tipStavke);
 	
 	if (mysql_query (sql->connection, sql->query) != 0) {
 		printf ("Neuspesno izvrsavanje upita\n");
@@ -131,6 +131,7 @@ void dodajSankeraKuvara(Sql *sql, int sifra, char* tipStavke) {
 	}
 }
 
+// TODO
 void dodajStavku(Sql *sql) {
 	int tipStavke = 0;
 	
@@ -142,18 +143,18 @@ void dodajStavku(Sql *sql) {
 	scanf("%i", &tipStavke);
 	
 	printf ("Unesite:\n");
-	printf("sifru stavke\n");
+	printf("Sifru stavke:\n");
 	int sifra = 0;
 	scanf("%i", &sifra);
-	printf("naziv\n");
-	char naziv[45];
-	scanf("%s", naziv);
-	printf("cenu\n");
+	char *naziv = (char *) malloc(100);
+	char *opis = (char *) malloc(100); 
+	printf("Naziv:\n");
+	scanf ("%ms", &naziv);
+	printf("Cenu:\n");
 	double cena = 0;
 	scanf("%lf", &cena);
-	printf("opis\n");
-	char opis[256];
-	scanf("%s", opis);
+	printf("Opis:\n");
+	scanf ("%ms", &opis);
 	
 	strcpy(sql->query,"");
 	
@@ -169,6 +170,8 @@ void dodajStavku(Sql *sql) {
 	} else {
 		dodajPice(sql, sifra);
 	}
+
+	prikazZaSefaSale(sql);
 }
 
 void dodajJelo(Sql *sql, int sifra) {
@@ -217,10 +220,11 @@ void dodajNoviMeni(Sql *sql) {
 	scanf("%i", &popust);
 	
 	strcpy(sql->query,"");
-	sprintf(sql->query, "insert into Meni (idMenija, vaziOd, vaziDo, popust) values (%i, now(), NULL, %i);", sifra, popust);
+	sprintf(sql->query, "insert into Meni (idMenija, vaziOd, vaziDo, popust) values ('%i', now(), NULL, '%i');", sifra, popust);
 	
 	if (mysql_query (sql->connection, sql->query) != 0) {
 		printf ("Neuspesno izvrsavanje upita\n");
+		printf("%s\n",mysql_error(sql->connection));
 		exit (EXIT_FAILURE);
 	}
 	
@@ -229,6 +233,7 @@ void dodajNoviMeni(Sql *sql) {
 	
 	if (mysql_query (sql->connection, sql->query) != 0) {
 		printf ("Neuspesno izvrsavanje upita\n");
+		printf("%s\n",mysql_error(sql->connection));
 		exit (EXIT_FAILURE);
 	}
 	
@@ -237,22 +242,27 @@ void dodajNoviMeni(Sql *sql) {
 	
 	ispisiSveStavke(sql);
 	
-	char *s;
+	char s[50];
 	
-	scanf ("%ms", &s);
+	scanf ("%s", s);
 	
 	while(strcmp(s, "kraj")) {
 		int sifraStavke = 0;
 		sifraStavke = (int)strtol(s,NULL,10);
-		
+
 		strcpy(sql->query,"");
-		sprintf(sql->query, "insert into MeniStavka (idMenija, idStavke) values (%i, %i);", sifra, sifraStavke);
+		sprintf(sql->query, "insert into MeniStavka (idMenija, idStavke) values ('%i', '%i');", sifra, sifraStavke);
 		
 		if (mysql_query (sql->connection, sql->query) != 0) {
 			printf ("Neuspesno izvrsavanje upita\n");
+			printf("%s\n",mysql_error(sql->connection));
 			exit (EXIT_FAILURE);
 		}
+
+		scanf ("%s", s);
 	}
+
+	prikazZaSefaSale(sql);
 }
 
 void ispisiSveStavke(Sql *sql) {
@@ -326,11 +336,11 @@ void prikazZaKonobare(Sql *sql) {
 void prikaziStavkeIzNarudzbine(Sql *sql, int sifraNarudzbine) {
 	strcpy(sql->query, "");
     sprintf(sql->query, "select ns.spremno as Spremno, s.naziv as Naziv, d.naziv as NazivDodatka, d.kolicina as DodatakKolicina \
-						from NarudzbinaStavka ns join MeniStavka ms on ms.idMenija = n.idMenija and ms.idStavke = n.idStavke \
+						from NarudzbinaStavka ns join MeniStavka ms on ms.idMenija = ns.idMenija and ms.idStavke = ns.idStavke \
 						join Stavka s on s.idStavke = ms.idStavke \
-						join DodatakStavkeIzNarudzbine dsn on dsn.idNarudzbine = n.idNarudzbine and \
+						left join DodatakStavkeIzNarudzbine dsn on dsn.idNarudzbine = ns.idNarudzbine and \
 																dsn.idMenija = ms.idMenija and ms.idStavke = dsn.idStavke \
-						join Dodatak d on d.idDodatka = dsn.idDodatka \
+						left join Dodatak d on d.idDodatak = dsn.idDodatka \
 						where ns.idNarudzbine = %i;", sifraNarudzbine);
 
     if(mysql_query(sql->connection, sql->query)){
@@ -359,15 +369,16 @@ void prikaziStavkeIzNarudzbine(Sql *sql, int sifraNarudzbine) {
     printf("\n\n");
 	
 	printf("Kad je sve spremno iz neke narudzbine mozete da je usluzite.\n");
-	printf("Ukoliko ste usluzili narudzbinu unesite \"usluzeno\"\n.");
-	printf("Ukoliko zelite da vidite status neke druge narudzbine unesite \"nazad\"\n.");
+	printf("Ukoliko ste usluzili narudzbinu unesite \"usluzeno\".\n");
+	printf("Ukoliko zelite da vidite status neke druge narudzbine unesite \"nazad\".\n");
 	
 	
-	char *s;
+	char s[50];
 	
-	scanf ("%ms", &s);
+	scanf ("%s", s);
 	
-	if(!strcmp(s, "usluzeno")) {
+	if(strcmp(s, "usluzeno") == 0) {
+		printf("aaaaa");
 		strcpy(sql->query, "");
 		sprintf(sql->query, "update Narudzbina set usluzeno = true where idNarudzbine = %i;", sifraNarudzbine);
 
@@ -385,11 +396,11 @@ void prikazZaSankereIKuvare(Sql *sql) {
 	// TODO: Razdvojiti za konobare i za kuvare i razmotriti dodatak, ovako ne bi trebalo da bude dobro...
 	strcpy(sql->query, "");
     sprintf(sql->query, "select s.naziv as Naziv, d.naziv as NazivDodatka, d.kolicina as DodatakKolicina \
-						from NarudzbinaStavka ns join MeniStavka ms on ms.idMenija = n.idMenija and ms.idStavke = n.idStavke \
+						from NarudzbinaStavka ns join MeniStavka ms on ms.idMenija = ns.idMenija and ms.idStavke = ns.idStavke \
 						join Stavka s on s.idStavke = ms.idStavke \
-						join DodatakStavkeIzNarudzbine dsn on dsn.idNarudzbine = n.idNarudzbine and \
+						left join DodatakStavkeIzNarudzbine dsn on dsn.idNarudzbine = ns.idNarudzbine and \
 																dsn.idMenija = ms.idMenija and ms.idStavke = dsn.idStavke \
-						join Dodatak d on d.idDodatka = dsn.idDodatka \
+						left join Dodatak d on d.idDodatak = dsn.idDodatka \
 						where ns.spremno = false \
 						order by ns.idNarudzbine");
 

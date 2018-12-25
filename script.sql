@@ -87,11 +87,10 @@ DROP TABLE IF EXISTS Meni ;
 CREATE TABLE IF NOT EXISTS Meni (
   idMenija INT NOT NULL,
   vaziOd DATE NOT NULL,
-  vaziDo DATE NOT NULL,
+  vaziDo DATE,
   popust INT NULL,
   PRIMARY KEY (idMenija))
 ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Table Stavka
@@ -275,7 +274,7 @@ CREATE TABLE IF NOT EXISTS NarudzbinaStavka (
     ON UPDATE NO ACTION,
   CONSTRAINT fk_NarudzbinaStavka_Stavka
     FOREIGN KEY (idStavke)
-    REFERENCES MeniStavka (idMenija)
+    REFERENCES MeniStavka (idStavke)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT fk_NarudzbinaStavka_RadnikPorudzbina

@@ -25,3 +25,17 @@ INSERT INTO Stavka (idStavke, opis, cena, naziv) VALUES (4, "Telece meso,pecurke
 INSERT INTO Stavka (idStavke, opis, cena, naziv) VALUES (5, "Mix zelenih salata,tunjevina, bareno jaje, masline, crveni luk, čeri paradajz ", 540, "TUNA SALATA");
 INSERT INTO Stavka (idStavke, opis, cena, naziv) VALUES (6, "", 1250, "LIGNJE NA ŽARU");
 COMMIT;
+
+-- -----------------------------------------------------
+-- Data for table Jelo
+-- -----------------------------------------------------
+
+START TRANSACTION;
+USE mydb;
+INSERT INTO Jelo (idJela, gramaza, brojOsoba) VALUES (1, 300, 1);
+INSERT INTO Jelo (idJela, gramaza, brojOsoba) VALUES (2, 500, 2);
+INSERT INTO Jelo (idJela, gramaza, brojOsoba) VALUES (3, 1000, 3);
+INSERT INTO Jelo (idJela, gramaza, brojOsoba) VALUES (4, 250, 1);
+INSERT INTO Jelo (idJela, gramaza, brojOsoba) VALUES (5, 300, 1);
+INSERT INTO Jelo (idJela, gramaza, brojOsoba) VALUES (6, 400, 2);
+COMMIT;

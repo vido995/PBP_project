@@ -1,13 +1,14 @@
-CFLAGS	= -g -Wall `mysql_config --cflags --libs`
+CFLAGS	= -g -Wall 
+CF = `mysql_config --cflags --libs`
 
 main: radnici.o podesavanja.o main.c
-	gcc -o $@ $^ $(CFLAGS)
+	gcc $(CFLAGS) -o $@ $^ $(CF) 
 
 podesavanja.o: podesavanja.c podesavanja.h
-	gcc -o $(CFLAGS) -c -o $@ $<
+	gcc  $(CFLAGS) -c -o $@ $< $(CF)
 
 radnici.o: radnici.c radnici.h
-	gcc -o $(CFLAGS) -c -o $@ $<
+	gcc  $(CFLAGS) -c -o $@ $< $(CF)
 
 .PHONY: clean
 

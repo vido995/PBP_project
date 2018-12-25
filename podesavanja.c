@@ -38,12 +38,18 @@ void izborStola(Sql *sql) {
 }
 
 void prikaziMeni(Sql *sql, int sifraStola) {
-	printf("***** Prikaz za goste *****\n\n");
-		
+	printf("***************************\n");
+	printf("***** Prikaz za goste *****\n");
+	printf("***************************\n");
+
 	strcpy(sql->query, "");
-	sprintf(sql->query, "select m.idMenija, m.popust, m.vaziOd, m.vaziDo from Meni m \
-						where m.vaziDo is null or now() between m.vaziOd and m.vaziDo;");
+	sprintf(sql->query, "select m.idMenija, m.popust, m.vaziOd, m.vaziDo from Meni m where m.vaziDo is null or now() between m.vaziOd and m.vaziDo;");
 	
+	if(mysql_query(sql->connection, sql->query)){
+        printf("%s\n",mysql_error(sql->connection));
+        exit(EXIT_FAILURE);
+    }
+
 	sql->result = mysql_use_result(sql->connection);
     sql->column = mysql_fetch_fields(sql->result);
 	
@@ -71,13 +77,15 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 	if (popust != 0) {
 		printf("Popust na ovom meniju je %d posto.\n", popust);
 	}
+
+	for(; mysql_fetch_row(sql->result) != 0;); 
 	
 	int stanje = 0;
-	printf("%s:\n%s\n%s\n\n",
+	printf("%s:\n%s\n%s\n",
 		"Izaberite opciju",
 		"1. Jelovnik", 
 		"2. Picovnik");
-	scanf("%i", &stanje);
+	scanf("%d", &stanje);
 
 	char s[50];
 
@@ -94,9 +102,10 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 	
 	printf("Ako zelite da zavrsite narudzbinu unesite \'naruci\', a ako zelite da se prebacite na %s unesite \'%s\'.\n", s, s);
 	
-	printf("Izaberite sifru stavki koju zelite da narucite: \n");
+	printf("Izaberite sifru stavki koje zelite da narucite:\n");
 	
 	char akcija[50];
+
 	scanf("%s", akcija);
 
 	int stavkeNarudzbine[50];
@@ -105,13 +114,18 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 	DodatakStavka dodatakStavkeIzNarudzbine[50];
 	int brDodataka = 0;
 
-	if (strcmp(akcija, "racun")) {
+	if (strcmp(akcija, "racun") == 0) {
 		double ukupanIznos = 0;
 
 		strcpy(sql->query, "");
-		sprintf(sql->query, "select s.cena \
-						from Narudzbina n join NarudzbinaStavka ns on n.idNarudzbine = ns.idNarudzbine join Stavka s on s.idStavke = ns.idStavke where n.idStola = %d and n.idRacuna is null;", sifraStola);
-		sql->result = mysql_use_result(sql->connection);
+		sprintf(sql->query, "select s.cena from Narudzbina n join NarudzbinaStavka ns on n.idNarudzbine = ns.idNarudzbine join Stavka s on s.idStavke = ns.idStavke where n.idStola = %d and n.idRacuna is null;", sifraStola);
+		
+        if(mysql_query(sql->connection, sql->query)){
+            printf("%s\n",mysql_error(sql->connection));
+            exit(EXIT_FAILURE);
+        }
+
+        sql->result = mysql_use_result(sql->connection);
 		sql->column = mysql_fetch_fields(sql->result);
 
 		while((sql->row = mysql_fetch_row(sql->result))) {
@@ -121,9 +135,14 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 		}
 
 		strcpy(sql->query, "");
-		sprintf(sql->query, "select d.cena \
-						from Narudzbina n join DodatakStavkeIzNarudzbine dsn on n.idNarudzbine = dsn.idNarudzbine join Dodatak d on d.idDodatka = dsn.idDodatka where n.idStola = %d and n.idRacuna is null;", sifraStola);
-		sql->result = mysql_use_result(sql->connection);
+		sprintf(sql->query, "select d.cena from Narudzbina n join DodatakStavkeIzNarudzbine dsn on n.idNarudzbine = dsn.idNarudzbine join Dodatak d on d.idDodatka = dsn.idDodatka where n.idStola = %d and n.idRacuna is null;", sifraStola);
+	
+        if(mysql_query(sql->connection, sql->query)){
+            printf("%s\n",mysql_error(sql->connection));
+            exit(EXIT_FAILURE);
+        }
+
+    	sql->result = mysql_use_result(sql->connection);
 		sql->column = mysql_fetch_fields(sql->result);
 
 		while((sql->row = mysql_fetch_row(sql->result))){
@@ -136,12 +155,17 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 		sprintf(sql->query, "insert into Racun (iznos) values (%lf);", ukupanIznos);
 
 		if (mysql_query (sql->connection, sql->query) != 0) {
-			printf ("Neuspesno izvrsavanje upita\n");
+			printf("%s\n",mysql_error(sql->connection));
 			exit (EXIT_FAILURE);
 		}
 
 		strcpy(sql->query, "");
 		sprintf(sql->query, "select r.idRacuna from Racun r order by idRacuna desc limit 1;");
+
+        if(mysql_query(sql->connection, sql->query)){
+            printf("%s\n",mysql_error(sql->connection));
+            exit(EXIT_FAILURE);
+        }
 		
 		sql->result = mysql_use_result(sql->connection);
 		sql->column = mysql_fetch_fields(sql->result);
@@ -161,7 +185,7 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 		}
 
 	} else {
-		while (strcmp(akcija, "naruci")) {
+		while (strcmp(akcija, "naruci") != 0) {
 
 			if (!strcmp(akcija, "jelovnik")) {
 				prikazJelovnika(sql, idMenija);
@@ -169,18 +193,24 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 				prikazPicovnika(sql, idMenija);
 			} else {
 				int sifraStavke = strtol(akcija, NULL, 10);
-				
+
 				//DODAJ STAVKU U NIZ
 				stavkeNarudzbine[brStavki] = sifraStavke;
 				brStavki++;
 				
 				strcpy(sql->query, "");
-				sprintf(sql->query, "select d.idDodatka SifraDodatka, d.naziv as Naziv, d.opis as Opis, d.cena as Cena, d.kolicina as Kolicina \
-								from Dodatak d join StavkaDodatak sd on sd.idDodatka = d.idDodatka \
-								where sd.idStavke = %d;", sifraStavke);
-				sql->result = mysql_use_result(sql->connection);
-				sql->column = mysql_fetch_fields(sql->result);
+				sprintf(sql->query, "select d.idDodatak SifraDodatka, d.naziv as Naziv, d.opis as Opis, d.cena as Cena, d.kolicina as Kolicina from Dodatak d join StavkaDodatak sd on sd.idDodatka = d.idDodatak where sd.idStavke = '%d';", sifraStavke);
+				
+				if(mysql_query(sql->connection, sql->query)){
+					printf("%s\n",mysql_error(sql->connection));
+					exit(EXIT_FAILURE);
+				}
+				
 				int n = mysql_field_count(sql->connection);
+                if (n > 0) {
+                    sql->result = mysql_use_result(sql->connection);
+                    sql->column = mysql_fetch_fields(sql->result);
+                }
 
 				if ((sql->row = mysql_fetch_row(sql->result))) {
 					for(int i = 0; i<n; i++){
@@ -228,29 +258,38 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 		sprintf(sql->query, "insert into Narudzbina (idStola, usluzeno) values (%i, %d);", sifraStola, 0);
 
 		if (mysql_query (sql->connection, sql->query) != 0) {
-			printf ("Neuspesno izvrsavanje upita\n");
+			printf("%s\n",mysql_error(sql->connection));
 			exit (EXIT_FAILURE);
 		}
 
 		strcpy(sql->query, "");
 		sprintf(sql->query, "select n.idNarudzbine from Narudzbina n order by idNarudzbine desc limit 1;");
+
+        if (mysql_query (sql->connection, sql->query) != 0) {
+			printf("%s\n",mysql_error(sql->connection));
+			exit (EXIT_FAILURE);
+		}
 		
 		sql->result = mysql_use_result(sql->connection);
-		sql->column = mysql_fetch_fields(sql->result);
-		
 		sql->row = mysql_fetch_row(sql->result);
 
 		int idNarudzbine = 0;
 		
 		idNarudzbine = strtol(sql->row[0], NULL, 10);
+
+        printf("%d\n", idNarudzbine);
+
+        mysql_fetch_row(sql->result);
 		
 		//PRODJI KROZ NIZOVE STAVKI I DODATAKA
 		for (int i = 0; i < brStavki; i++) {
+            printf("%d\n", stavkeNarudzbine[i]);
+            printf("%d\n", idMenija);
 			strcpy(sql->query,"");
-			sprintf(sql->query, "insert into NarudzbinaStavka (idNarudzbine, idStavke, idMenija, spremno) values (%i, %i, %i, %d);", idNarudzbine, stavkeNarudzbine[i], idMenija, 0);
+			sprintf(sql->query, "insert into NarudzbinaStavka (idNarudzbine, idStavke, idMenija, spremno) values ('%d', '%d', '%d', '%d');", idNarudzbine, stavkeNarudzbine[i], idMenija, 0);
 
 			if (mysql_query (sql->connection, sql->query) != 0) {
-				printf ("Neuspesno izvrsavanje upita\n");
+				printf("%s\n",mysql_error(sql->connection));
 				exit (EXIT_FAILURE);
 			}	
 		}
@@ -261,7 +300,7 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 			idNarudzbine, dodatakStavkeIzNarudzbine[i].sifraStavke, idMenija, dodatakStavkeIzNarudzbine[i].sifraDodatka);
 
 			if (mysql_query (sql->connection, sql->query) != 0) {
-				printf ("Neuspesno izvrsavanje upita\n");
+				printf("%s\n",mysql_error(sql->connection));
 				exit (EXIT_FAILURE);
 			}	
 		}
@@ -276,7 +315,7 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 void prikazJelovnika(Sql *sql, int idMenija) {
 	strcpy(sql->query, "");
 	sprintf(sql->query, "select s.idStavke SifraStavke, s.naziv as Naziv, s.opis as Opis, s.cena as Cena \
-						from Stavka s join MeniStavka ms on s.idStavke = ms.idStavke join Jelo j where j.idJela = s.idStavke \
+						from Stavka s join MeniStavka ms on s.idStavke = ms.idStavke join Jelo j on j.idJela = s.idStavke \
 						where ms.idMenija = %d;", idMenija);
 	
 	if (mysql_query(sql->connection, sql->query)) {
@@ -291,12 +330,14 @@ void prikazJelovnika(Sql *sql, int idMenija) {
     for (int i = 0; i<n; i++) {
         printf("%s\t",sql->column[i].name);
     }
+
+	printf("\n");
 	
 	while ((sql->row = mysql_fetch_row(sql->result))) {
         for(int i = 0; i<n; i++){
             printf("%s\t",sql->row[i]);
         }
-        printf("\n");
+    	printf("\n");
     }
 }
 
