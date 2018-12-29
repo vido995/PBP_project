@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS Konobar (
   idKonobara INT NOT NULL,
   depozit DOUBLE NULL,
   dnevniPazar DOUBLE NULL,
+  sefSale TINYINT(1),
   PRIMARY KEY (idKonobara),
   CONSTRAINT fk_Konobar_Radnik
     FOREIGN KEY (idKonobara)
@@ -149,7 +150,7 @@ DROP TABLE IF EXISTS Dodatak ;
 CREATE TABLE IF NOT EXISTS Dodatak (
   idDodatak INT NOT NULL,
   naziv VARCHAR(45) NOT NULL,
-  kolicina VARCHAR(45) NULL,
+  kolicina DOUBLE NULL,
   opis VARCHAR(500) NULL,
   cena DOUBLE NULL,
   PRIMARY KEY (idDodatak))
@@ -164,6 +165,7 @@ DROP TABLE IF EXISTS Racun ;
 CREATE TABLE IF NOT EXISTS Racun (
   idRacun INT NOT NULL AUTO_INCREMENT,
   iznos DOUBLE NOT NULL,
+  naplaceno TINYINT(1),
   PRIMARY KEY (idRacun))
 ENGINE = InnoDB;
 
@@ -253,12 +255,13 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS NarudzbinaStavka ;
 
 CREATE TABLE IF NOT EXISTS NarudzbinaStavka (
+  idStavkeIzNarudzbine INT NOT NULL auto_increment,
   idNarudzbine INT NOT NULL,
   idMenija INT NOT NULL,
   idStavke INT NOT NULL,
   idRadnikPorudzbina INT NULL,
-  spremno VARCHAR(45) NULL,
-  PRIMARY KEY (idNarudzbine, idMenija, idStavke),
+  spremno tinyint(1) NULL,
+  PRIMARY KEY (idStavkeIzNarudzbine),
   INDEX fk_Menija_idx (idMenija ASC),
   INDEX fk_Stavka_idx (idStavke ASC),
   INDEX fk_RadnikPorudzbina_idx (idRadnikPorudzbina ASC),
@@ -291,27 +294,14 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS DodatakStavkeIzNarudzbine ;
 
 CREATE TABLE IF NOT EXISTS DodatakStavkeIzNarudzbine (
-  idNarudzbine INT NOT NULL,
-  idMenija INT NOT NULL,
-  idStavke INT NOT NULL,
+  idStavkeIzNarudzbine INT NOT NULL,
   idDodatka INT NOT NULL,
-  PRIMARY KEY (idNarudzbine, idMenija, idStavke, idDodatka),
-  INDEX fk_Meni_idx (idMenija ASC),
-  INDEX fk_Stavka_idx (idStavke ASC),
+  PRIMARY KEY (idStavkeIzNarudzbine, idDodatka),
+  INDEX fk_StavkaIzNarudzbine_idx (idStavkeIzNarudzbine ASC),
   INDEX fk_Dodatak_idx (idDodatka ASC),
-  CONSTRAINT fk_DodatakStavkeIzNarudzbine_Narudzbina
-    FOREIGN KEY (idNarudzbine)
-    REFERENCES NarudzbinaStavka (idNarudzbine)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT fk_DodatakStavkeIzNarudzbine_Meni
-    FOREIGN KEY (idMenija)
-    REFERENCES NarudzbinaStavka (idNarudzbine)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT fk_DodatakStavkeIzNarudzbine_Stavka
-    FOREIGN KEY (idStavke)
-    REFERENCES NarudzbinaStavka (idNarudzbine)
+  CONSTRAINT fk_DodatakStavkeIzNarudzbine_NarudzbinaStavka
+    FOREIGN KEY (idStavkeIzNarudzbine)
+    REFERENCES NarudzbinaStavka (idStavkeIzNarudzbine)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT fk_DodatakStavkeIzNarudzbine_Dodatak
