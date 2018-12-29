@@ -54,7 +54,15 @@ USE mydb;
 INSERT INTO TipJela (idTipJela, naziv) VALUES (1, 'posno');
 INSERT INTO TipJela (idTipJela, naziv) VALUES (2, 'vegansko');
 INSERT INTO TipJela (idTipJela, naziv) VALUES (3, 'vegetarijansko');
-INSERT INTO TipJela (idTipJela, naziv) VALUES (4, 'makrobioticko');
+COMMIT;
+
+-- -----------------------------------------------------
+-- Data for table JeloTipJela
+-- -----------------------------------------------------
+START TRANSACTION;
+USE mydb;
+INSERT INTO JeloTipJela (idJela, idTipJela) VALUES (5, 1);
+INSERT INTO JeloTipJela (idJela, idTipJela) VALUES (6, 1);
 COMMIT;
 
 START TRANSACTION;
@@ -62,4 +70,13 @@ USE mydb;
 INSERT INTO TipPica (idTipPica, naziv) VALUES (1, 'alkohol');
 INSERT INTO TipPica (idTipPica, naziv) VALUES (2, 'bezalkoholno');
 INSERT INTO TipPica (idTipPica, naziv) VALUES (3, 'topli napici');
+COMMIT;
+
+-- -----------------------------------------------------
+-- Data for table Dodatak
+-- -----------------------------------------------------
+START TRANSACTION;
+USE mydb;
+INSERT INTO Dodatak (idDodatak, opis, cena, naziv, kolicina) VALUES (1, "kolicina je u ml", 10, "Mleko", 50);
+INSERT INTO Dodatak (idDodatak, opis, cena, naziv, kolicina) VALUES (2, "kolicina je u ml", 20, "Slag", 25);
 COMMIT;

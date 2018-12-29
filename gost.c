@@ -47,7 +47,7 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 	printf("%s:\n%s\n%s\n%s\n",
 		"Izaberite opciju",
 		"1. Jelovnik", 
-		"2. Picovnik",
+		"2. Karta pica",
         "3. Racun");
 	scanf("%d", &stanje);
 
@@ -55,7 +55,7 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 
 	if (stanje == 1) {
 		prikazJelovnika(sql, idMenija);
-		sprintf(s, "picovnik");
+		sprintf(s, "pice");
 	} else if (stanje == 2) {
 		prikazPicovnika(sql, idMenija);
 		sprintf(s, "jelovnik");
@@ -94,6 +94,9 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 			printf("%s\n",mysql_error(sql->connection));
 			exit(EXIT_FAILURE);
 		}
+
+		printf("Molimo sacekajte konobara koji Vas je usluzivao da Vam donese racun.\n");
+
         prikaziMeni(sql, sifraStola);
     } else {
 		printf("Niste uneli dobru opciju.\n");
@@ -153,7 +156,7 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 
 			if (!strcmp(akcija, "jelovnik")) {
 				prikazJelovnika(sql, idMenija);
-			} else if (!strcmp(akcija, "picovnik")) {
+			} else if (!strcmp(akcija, "pice")) {
 				prikazPicovnika(sql, idMenija);
 			} else {
 				int sifraStavke = strtol(akcija, NULL, 10);
@@ -163,7 +166,7 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 				brStavki++;
 				
 				strcpy(sql->query, "");
-				sprintf(sql->query, "select d.idDodatak 'Sifra dodatka', d.naziv as Naziv, d.opis as Opis, d.cena as Cena, d.kolicina as Kolicina from Dodatak d join StavkaDodatak sd on sd.idDodatka = d.idDodatak where sd.idStavke = '%d';", sifraStavke);
+				sprintf(sql->query, "select d.idDodatak 'Sifra dodatka', d.naziv as Naziv, d.cena as Cena, d.kolicina as Kolicina, d.opis as Opis from Dodatak d join StavkaDodatak sd on sd.idDodatka = d.idDodatak where sd.idStavke = '%d';", sifraStavke);
 				
 				if(mysql_query(sql->connection, sql->query)){
 					printf("%s\n",mysql_error(sql->connection));
@@ -180,11 +183,9 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 					for(int i = 0; i<n; i++){
 						printf("%s",sql->column[i].name);
 
-                        for (int k = strlen(sql->column[i].name); k <= 10; k++) {
+                        for (int k = strlen(sql->column[i].name); k <= 18; k++) {
                             printf(" ");
                         }
-
-                        printf("\t");
 					}
 					
 					printf("\n\n");
@@ -192,7 +193,7 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 					for(int i = 0; i<n; i++){
 						printf("%s",sql->row[i]);
 
-                        for (int k = strlen(sql->row[i]); k <= 10; k++) {
+                        for (int k = strlen(sql->row[i]); k <= 18; k++) {
                             printf(" ");
                         }
 					}
@@ -200,9 +201,9 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 					
 					while((sql->row = mysql_fetch_row(sql->result))){
 						for(int i = 0; i<n; i++){
-							printf("%s\t",sql->row[i]);
+							printf("%s",sql->row[i]);
 
-                            for (int k = strlen(sql->row[i]); k <= WIDTH_CELL; k++) {
+                            for (int k = strlen(sql->row[i]); k <= 18; k++) {
                                 printf(" ");
                             }
 						}
@@ -254,8 +255,6 @@ void prikaziMeni(Sql *sql, int sifraStola) {
 		int idNarudzbine = 0;
 		
 		idNarudzbine = strtol(sql->row[0], NULL, 10);
-
-        printf("%d\n", idNarudzbine);
 
         mysql_fetch_row(sql->result);
 		
@@ -331,7 +330,7 @@ void prikazJelovnika(Sql *sql, int idMenija) {
     for (int i = 0; i<n; i++) {
         printf("%s",sql->column[i].name);
 
-        for (int k = strlen(sql->column[i].name); k <= 12; k++) {
+        for (int k = strlen(sql->column[i].name); k <= 18; k++) {
             printf(" ");
         }
 
@@ -344,7 +343,7 @@ void prikazJelovnika(Sql *sql, int idMenija) {
         for(int i = 0; i<n; i++){
             printf("%s",sql->row[i]);
 
-            for (int k = strlen(sql->row[i]); k <= 12; k++) {
+            for (int k = strlen(sql->row[i]); k <= 18; k++) {
                 printf(" ");
             }
 
@@ -374,7 +373,7 @@ void prikazPicovnika(Sql *sql, int idMenija) {
     for (int i = 0; i<n; i++) {
         printf("%s",sql->column[i].name);
 
-        for (int k = strlen(sql->column[i].name); k <= 12; k++) {
+        for (int k = strlen(sql->column[i].name); k <= 18; k++) {
             printf(" ");
         }
 
@@ -387,7 +386,7 @@ void prikazPicovnika(Sql *sql, int idMenija) {
         for(int i = 0; i<n; i++){
             printf("%s",sql->row[i]);
 
-            for (int k = strlen(sql->row[i]); k <= 12; k++) {
+            for (int k = strlen(sql->row[i]); k <= 18; k++) {
                 printf(" ");
             }
 
